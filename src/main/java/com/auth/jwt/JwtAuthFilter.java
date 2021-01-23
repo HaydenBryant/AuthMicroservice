@@ -3,6 +3,7 @@ package com.auth.jwt;
 import com.auth.entity.User;
 import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +29,17 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
 
     @Value("${jwt.signing.key.secret}")
     private String secret;
+    @Value("${jwt.http.request.header}")
+    private String header;
+    @Value("{jwt.token.expiration.in.seconds}")
+    private String expiration;
+
+
+    jwt.signing.key.secret=mySecret
+    jwt.get.token.uri=/authenticate
+    jwt.refresh.token.uri=/refresh
+    jwt.http.request.header=Authorization
+    jwt.token.expiration.in.seconds=604800
 
     public JwtAuthFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -59,9 +71,9 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
 
         String token = JWT.create()
                 .withSubject(((User) auth.getPrincipal()).getEmail())
-                .withExpiresAt(new Date(System.currentTimeMillis() + jwt.token.expiration.in.seconds)
+                .withExpiresAt(new Date(System.currentTimeMillis() + expiration)
                 .sign(HMAC512(secret.getBytes()));
-        res.addHeader(jwt.http.request.header, "Bearer " + token);
+        res.addHeader(header, "Bearer " + token);
     }
 
 
