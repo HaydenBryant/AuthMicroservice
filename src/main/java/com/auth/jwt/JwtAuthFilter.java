@@ -1,9 +1,10 @@
 package com.auth.jwt;
 
-import com.auth.jwt.JWT;
 import com.auth.entity.User;
+import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,6 +25,9 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Value("${jwt.signing.key.secret}")
+    private String secret;
 
     public JwtAuthFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -54,9 +58,9 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication auth) throws IOException, ServletException {
 
         String token = JWT.create()
-                .withSubject(((User) auth.getPrincipal()).getUsername())
+                .withSubject(((User) auth.getPrincipal()).getEmail())
                 .withExpiresAt(new Date(System.currentTimeMillis() + jwt.token.expiration.in.seconds)
-                .sign(HMAC512(jwt.signing.key.secret.getBytes()));
+                .sign(HMAC512(secret.getBytes()));
         res.addHeader(jwt.http.request.header, "Bearer " + token);
     }
 
