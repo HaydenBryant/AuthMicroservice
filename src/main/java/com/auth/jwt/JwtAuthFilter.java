@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static com.auth0.jwt.algorithms.Algorithm.HMAC256;
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 
 public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
@@ -34,12 +35,6 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
     @Value("{jwt.token.expiration.in.seconds}")
     private String expiration;
 
-
-    jwt.signing.key.secret=mySecret
-    jwt.get.token.uri=/authenticate
-    jwt.refresh.token.uri=/refresh
-    jwt.http.request.header=Authorization
-    jwt.token.expiration.in.seconds=604800
 
     public JwtAuthFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
@@ -72,10 +67,7 @@ public class JwtAuthFilter extends UsernamePasswordAuthenticationFilter {
         String token = JWT.create()
                 .withSubject(((User) auth.getPrincipal()).getEmail())
                 .withExpiresAt(new Date(System.currentTimeMillis() + expiration)
-                .sign(HMAC512(secret.getBytes()));
+                .sign(HMAC256(secret.getBytes());
         res.addHeader(header, "Bearer " + token);
     }
-
-
-
 }
